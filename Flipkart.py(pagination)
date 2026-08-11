@@ -1,0 +1,50 @@
+import io
+
+
+import pandas as pd
+from bs4 import BeautifulSoup
+import requests
+
+product_names=[]
+product_prices=[]
+description=[]
+
+
+for i in range(2,10):
+    url="https://www.flipkart.com/search?q=speakers+under+1000&sid=0pm%2C0o7&as=on&as-show=on&otracker=AS_QueryStore_HistoryAutoSuggest_1_9_na_na_na&otracker1=AS_QueryStore_HistoryAutoSuggest_1_9_na_na_na&as-pos=1&as-type=HISTORY&suggestionId=speakers+under+1000%7CSpeakers&requestId=37b2de7d-0a97-4514-a8dd-74665c8db4eb&as-backfill=on&page="+str(i)
+    r=requests.get(url)
+        #print(r.status_code)
+
+    soup=BeautifulSoup(r.content,'lxml')
+    box=soup.find("div",class_="QSCKDh dLgFEE")
+
+        
+
+    names=box.find_all("a",class_="pIpigb")
+    for n in names:
+        title=n.text
+        product_names.append(title)
+    print(product_names)
+
+
+    price=box.find_all("div",class_="hZ3P6w")
+    for p in price:
+        rate=p.text
+        product_prices.append(rate)
+    print(product_prices)
+
+
+    desc=box.find_all("div",class_="U_GKRr")
+    for d in desc:
+        info=d.text
+        description.append(info)
+    print(description)
+
+    
+
+df = pd.DataFrame({"product_names": product_names,"product_prices": product_prices,"description": description})
+print(df)
+df.to_csv("products.csv")
+
+
+
