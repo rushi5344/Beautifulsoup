@@ -1,0 +1,37 @@
+import requests
+from bs4 import BeautifulSoup
+import csv
+
+base_url = "https://quotes.toscrape.com"
+
+# CSV file setup
+file = open("quotes.csv", "w", newline="", encoding="utf-8")
+writer = csv.writer(file)
+writer.writerow(["Quote", "Author", "Tags"])
+
+# Start from first page
+url = "/"
+
+while url:
+    print("Scraping:", base_url + url)
+
+    page = requests.get(base_url + url)
+    soup = BeautifulSoup(page.text, "lxml")
+
+    # Extract quotes
+    quotes = soup.find_all("div", class_="quote")
+
+    for q in quotes:
+        text = q.find("span", class_="text").text.strip()
+        author = q.find("small", class_="author").text.strip()
+        tags = [tag.text for tag in q.find_all("a", class_="tag")]
+        tags = ", ".join(tags)
+
+        writer.writerow([text, author, tags])
+
+    next_btn = soup.find("li", class_="next")
+    url = next_btn.find("a")["href"] if next_btn else None
+
+file.close()
+
+print("Scraping completed! Save to quotes.csv")
