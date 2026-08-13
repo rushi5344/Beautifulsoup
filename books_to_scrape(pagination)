@@ -1,0 +1,45 @@
+import csv
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
+
+base_url = "https://books.toscrape.com/catalogue/"
+URL = "page-1.html"
+
+file = open("books.csv", "w", newline="", encoding="utf-8")
+writer = csv.writer(file)
+writer.writerow(["TITLE", "PRICE", "RATING"])
+
+page_number = 1
+
+while URL and page_number <= 4:
+
+    full_url = urljoin(base_url, URL)
+    print("Scraping:", full_url)
+
+    page = requests.get(full_url)
+    soup = BeautifulSoup(page.text, "lxml")
+
+    books = soup.find_all("article", class_="product_pod")
+
+    for b in books:
+        title = b.find("h3").find("a")["title"]
+
+        price = b.find("p", class_="price_color").text.strip()
+
+        rating = b.find("p", class_="star-rating")["class"][1]
+
+        writer.writerow([title, price, rating])
+
+    next_btn = soup.find("li", class_="next")
+
+    if next_btn:
+        URL = next_btn.find("a")["href"]
+    else:
+        URL = None
+
+    page_number += 1
+
+file.close()
+
+print("Scraping completed. Saved to book.csv")
